@@ -1,0 +1,46 @@
+# Build directories
+/build/
+/build-*/
+*.cbp
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+Makefile
+*.cmake
+!CMakeLists.txt
+!cmake/*.cmake
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Compiled files
+*.o
+*.so
+*.a
+*.dylib
+*.dll
+*.exe
+*.out
+
+# Package manager
+node_modules/
+.npm/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+venv/
+.venv/
+
+# tokenizer-build (example implementation)
+/tokenizer-build/build/
+/tokenizer-build/tokenizer_test
+
