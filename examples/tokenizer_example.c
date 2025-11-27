@@ -116,10 +116,28 @@ int main(int argc, char** argv) {
 
     // Detokenize
     printf("\nDetokenization:\n");
-    char output[4096];
+
+    // First, get required buffer size
+    int required_size = llama_tokenizer_detokenize(
+        tokenizer, tokens, n_tokens,
+        NULL, 0, false, false
+    );
+
+    printf("  Required buffer: %d bytes\n", required_size);
+
+    // Allocate buffer and detokenize
+    char* output = (char*)malloc(required_size + 1);
+    if (!output) {
+        fprintf(stderr, "Error: Memory allocation failed\n");
+        free(tokens);
+        llama_tokenizer_destroy(tokenizer);
+        llama_tokenizer_free_backend();
+        return 1;
+    }
+
     int output_len = llama_tokenizer_detokenize(
         tokenizer, tokens, n_tokens,
-        output, sizeof(output) - 1
+        output, required_size + 1, false, false
     );
 
     if (output_len >= 0) {
@@ -130,11 +148,14 @@ int main(int argc, char** argv) {
         if (strcmp(text, output) == 0) {
             printf("  Match:  ✓ Perfect match!\n");
         } else {
-            printf("  Match:  ✗ Different (may be due to normalization)\n");
+            printf("  Match:  ✗ Different (may be due to tokenizer normalization)\n");
+            printf("  Note:   This is normal - tokenizers may normalize text\n");
         }
     } else {
         printf("  Error: Detokenization failed\n");
     }
+
+    free(output);
 
     // Cleanup
     free(tokens);

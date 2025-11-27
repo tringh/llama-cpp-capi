@@ -145,21 +145,36 @@ int32_t llama_tokenizer_token_to_piece(
 );
 
 /**
- * Detokenize tokens to text
+ * Detokenize tokens back to text
+ *
+ * This function converts an array of tokens back into text. It can be used in two modes:
+ *
+ * 1. Get required buffer size: Pass NULL for text and 0 for text_len_max
+ *    Returns the number of bytes needed (excluding null terminator)
+ *
+ * 2. Detokenize to buffer: Pass valid buffer and size
+ *    Returns number of bytes written on success
+ *    Returns negative of required size if buffer is too small
  *
  * @param tokenizer Tokenizer handle
- * @param tokens Array of tokens
- * @param n_tokens Number of tokens
- * @param text Output buffer for text
- * @param text_len Size of output buffer
- * @return Number of bytes written, or negative on error
+ * @param tokens Array of tokens to detokenize
+ * @param n_tokens Number of tokens in the array
+ * @param text Output buffer for text (can be NULL to get required size)
+ * @param text_len_max Maximum size of output buffer (0 when text is NULL)
+ * @param remove_special Remove BOS/EOS tokens if configured
+ * @param unparse_special Render special tokens in output
+ * @return On success: number of bytes written (excluding null terminator)
+ *         On insufficient buffer: negative of required bytes
+ *         On error: negative value
  */
 int32_t llama_tokenizer_detokenize(
     const llama_tokenizer_t* tokenizer,
     const llama_token* tokens,
     int32_t n_tokens,
     char* text,
-    int32_t text_len
+    int32_t text_len_max,
+    bool remove_special,
+    bool unparse_special
 );
 
 #ifdef __cplusplus

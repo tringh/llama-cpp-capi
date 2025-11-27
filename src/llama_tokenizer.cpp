@@ -176,27 +176,27 @@ int32_t llama_tokenizer_tokenize(
     }
 
     // If tokens is NULL, caller wants to know the token count
-    // Allocate a temporary buffer to get the count
+    // Use n_max_tokens=0 to trigger count-only path without writing to buffer
     if (tokens == NULL) {
-        // Reasonable upper bound: each byte could be a token, plus special tokens
-        int32_t max_tokens = text_len + 10;
-        llama_token* temp_tokens = (llama_token*)malloc(max_tokens * sizeof(llama_token));
-        if (!temp_tokens) {
-            return -1;
-        }
-
+        // Pass 0 for n_max_tokens - this is optimal because:
+        // 1. For any text with tokens: n_tokens_max=0 < res.size() triggers return -count
+        // 2. For empty text (0 tokens): loop runs 0 times, no write occurs
+        // 3. llama_tokenize checks buffer size BEFORE writing (see llama-vocab.cpp:3534)
+        // We still need a non-NULL pointer for the buffer parameter (some implementations check)
+        llama_token dummy;
         int32_t result = llama_tokenize(
             tokenizer->vocab,
             text,
             text_len,
-            temp_tokens,
-            max_tokens,
+            &dummy,
+            0,  // Size 0 ensures no writes, always returns count for non-empty text
             add_special,
             parse_special
         );
 
-        free(temp_tokens);
-        return result;
+        // llama_tokenize returns negative of required size when buffer is too small
+        // For empty text, returns 0 directly
+        return (result < 0) ? -result : result;
     }
 
     // Normal tokenization with provided buffer
@@ -236,31 +236,43 @@ int32_t llama_tokenizer_detokenize(
     const llama_token* tokens,
     int32_t n_tokens,
     char* text,
-    int32_t text_len
+    int32_t text_len_max,
+    bool remove_special,
+    bool unparse_special
 ) {
-    if (!tokenizer || !tokenizer->vocab || !tokens || !text) {
+    if (!tokenizer || !tokenizer->vocab || !tokens) {
         return -1;
     }
 
-    int32_t pos = 0;
-    for (int32_t i = 0; i < n_tokens && pos < text_len; i++) {
-        int32_t n = llama_token_to_piece(
+    // If text is NULL, caller wants to know the required text buffer size
+    // Use zero-size buffer to get the required size without writes
+    if (text == NULL) {
+        // Pass 0 for text_len_max - this triggers size calculation path
+        // llama_detokenize will return negative of required size when buffer is too small
+        char dummy;
+        int32_t result = llama_detokenize(
             tokenizer->vocab,
-            tokens[i],
-            text + pos,
-            text_len - pos,
-            0,
-            false
+            tokens,
+            n_tokens,
+            &dummy,
+            0,  // Size 0 ensures no writes, returns required size
+            remove_special,
+            unparse_special
         );
-        if (n < 0) {
-            return -1;
-        }
-        pos += n;
+
+        // llama_detokenize returns negative of required size when buffer is too small
+        // Convert to positive size for caller
+        return (result < 0) ? -result : result;
     }
 
-    if (pos < text_len) {
-        text[pos] = '\0';
-    }
-
-    return pos;
+    // Normal detokenization with provided buffer
+    return llama_detokenize(
+        tokenizer->vocab,
+        tokens,
+        n_tokens,
+        text,
+        text_len_max,
+        remove_special,
+        unparse_special
+    );
 }
