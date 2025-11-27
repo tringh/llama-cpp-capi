@@ -9,6 +9,15 @@ struct llama_tokenizer_t {
     const llama_vocab* vocab;
 };
 
+void llama_tokenizer_set_log_level(llama_tokenizer_log_level level) {
+    // Pure wrapper: for NONE, use llama.cpp's NULL callback to disable logs
+    if (level == LLAMA_TOKENIZER_LOG_NONE) {
+        llama_log_set(NULL, NULL);
+    }
+    // Note: llama.cpp doesn't provide runtime log level filtering beyond NULL
+    // Setting other levels has no effect - llama.cpp logs everything when callback is set
+}
+
 void llama_tokenizer_init(void) {
     llama_backend_init();
 }

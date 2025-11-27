@@ -27,6 +27,9 @@ int main(int argc, char** argv) {
     printf("Text:  \"%s\"\n", text);
     printf("===========================================\n\n");
 
+    // Disable logging before initialization
+    llama_tokenizer_set_log_level(LLAMA_TOKENIZER_LOG_NONE);
+
     // Initialize tokenizer backend
     llama_tokenizer_init();
 

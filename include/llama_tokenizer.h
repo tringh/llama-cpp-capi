@@ -20,6 +20,27 @@ typedef struct llama_tokenizer_t llama_tokenizer_t;
 typedef int32_t llama_token;
 
 /**
+ * Log levels for tokenizer operations
+ * Direct mapping to ggml_log_level from llama.cpp
+ */
+typedef enum {
+    LLAMA_TOKENIZER_LOG_NONE  = 0,  // GGML_LOG_LEVEL_NONE
+    LLAMA_TOKENIZER_LOG_DEBUG = 1,  // GGML_LOG_LEVEL_DEBUG
+    LLAMA_TOKENIZER_LOG_INFO  = 2,  // GGML_LOG_LEVEL_INFO
+    LLAMA_TOKENIZER_LOG_WARN  = 3,  // GGML_LOG_LEVEL_WARN
+    LLAMA_TOKENIZER_LOG_ERROR = 4,  // GGML_LOG_LEVEL_ERROR
+    LLAMA_TOKENIZER_LOG_CONT  = 5,  // GGML_LOG_LEVEL_CONT
+} llama_tokenizer_log_level;
+
+/**
+ * Set the logging level for tokenizer operations
+ * Must be called before llama_tokenizer_init()
+ *
+ * @param level Desired log level
+ */
+void llama_tokenizer_set_log_level(llama_tokenizer_log_level level);
+
+/**
  * Initialize the tokenizer backend
  * Must be called before any other tokenizer functions
  */
