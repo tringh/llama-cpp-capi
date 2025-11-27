@@ -1,6 +1,5 @@
 # Build directories
-/build/
-/build-*/
+**/build/
 *.cbp
 CMakeCache.txt
 CMakeFiles/
@@ -39,8 +38,4 @@ __pycache__/
 *.egg-info/
 venv/
 .venv/
-
-# tokenizer-build (example implementation)
-/tokenizer-build/build/
-/tokenizer-build/tokenizer_test
 
