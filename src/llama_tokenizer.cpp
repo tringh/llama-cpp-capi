@@ -9,13 +9,24 @@ struct llama_tokenizer_t {
     const llama_vocab* vocab;
 };
 
+// No-op callback to disable all logging
+static void log_callback_none(enum ggml_log_level level, const char * text, void * user_data) {
+    (void)level;
+    (void)text;
+    (void)user_data;
+    // Do nothing - this suppresses all log output
+}
+
 void llama_tokenizer_set_log_level(llama_tokenizer_log_level level) {
-    // Pure wrapper: for NONE or invalid levels, use llama.cpp's NULL callback to disable logs
+    // For NONE or invalid levels, set a no-op callback to suppress all logs
+    // Note: llama_log_set(NULL, NULL) would output everything to stderr
     if (level == LLAMA_TOKENIZER_LOG_NONE || level < 0 || level > LLAMA_TOKENIZER_LOG_CONT) {
+        llama_log_set(log_callback_none, NULL);
+    } else {
+        // For other levels, set NULL to use default stderr output
+        // Note: llama.cpp doesn't provide runtime log level filtering
         llama_log_set(NULL, NULL);
     }
-    // Note: llama.cpp doesn't provide runtime log level filtering beyond NULL
-    // Setting other levels has no effect - llama.cpp logs everything when callback is set
 }
 
 void llama_tokenizer_init(void) {
