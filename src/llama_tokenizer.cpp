@@ -10,8 +10,8 @@ struct llama_tokenizer_t {
 };
 
 void llama_tokenizer_set_log_level(llama_tokenizer_log_level level) {
-    // Pure wrapper: for NONE, use llama.cpp's NULL callback to disable logs
-    if (level == LLAMA_TOKENIZER_LOG_NONE) {
+    // Pure wrapper: for NONE or invalid levels, use llama.cpp's NULL callback to disable logs
+    if (level == LLAMA_TOKENIZER_LOG_NONE || level < 0 || level > LLAMA_TOKENIZER_LOG_CONT) {
         llama_log_set(NULL, NULL);
     }
     // Note: llama.cpp doesn't provide runtime log level filtering beyond NULL
